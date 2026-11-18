@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>국립공원 분실물 찾기</title>
+<style>
+* {box-sizing:border-box}
+body {
+  margin:0;
+  font-family:"Malgun Gothic",Arial,sans-serif;
+  background:#f4f7f5;color:#26352d;
+}
+header {
+  background:#176b48;color:white;
+  padding:30px 20px;text-align:center;
+}
+header h1 {margin:0 0 12px;font-size:28px}
+header p {margin:0;color:#d8eee1}
+nav {
+  display:flex;justify-content:center;
+  flex-wrap:wrap;gap:10px;padding:15px;
+  background:white;box-shadow:0 2px 5px #ddd;
+}
+button {
+  border:0;border-radius:7px;padding:12px 18px;
+  background:#176b48;color:white;
+  cursor:pointer;font-size:14px;
+}
+button:hover {opacity:.85}
+button.secondary {background:#64756b}
+main {max-width:1050px;margin:25px auto;padding:15px}
+.panel {
+  background:white;padding:22px;
+  border-radius:12px;margin-bottom:20px;
+  box-shadow:0 2px 10px #0000000c;
+}
+h2 {color:#176b48;margin-top:0}
+.search {
+  display:grid;grid-template-columns:2fr 1fr auto;
+  gap:10px;
+}
+input,select,textarea {
+  width:100%;padding:12px;
+  border:1px solid #d5ddd7;border-radius:7px;
+  font-size:14px;background:white;
+}
+textarea {min-height:85px;resize:vertical}
+form {display:grid;gap:12px}
+.form-grid {
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+}
+label {font-size:13px;font-weight:bold}
+label input,label select,label textarea {
+  margin-top:7px;font-weight:normal;
+}
+.cards {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:15px;
+}
+.item {
+  border:1px solid #e0e7e2;
+  border-radius:10px;overflow:hidden;
+  background:white;
+}
+.item img {
+  width:100%;height:160px;object-fit:cover;
+  background:#edf1ee;
+}
+.item-content {padding:15px}
+.tag {
+  display:inline-block;padding:5px 9px;
+  border-radius:20px;font-size:12px;
+  background:#e2f3e8;color:#176b48;
+}
+.tag.lost {background:#fff0df;color:#a45b16}
+.item h3 {margin:12px 0 8px}
+.item p {font-size:13px;color:#64756b;line-height:1.6}
+.item button {margin-top:8px}
+.empty {text-align:center;padding:40px;color:#89948c}
+.hidden {display:none}
+footer {
+  text-align:center;background:#174e38;
+  color:white;padding:25px;font-size:13px;
+}
+@media(max-width:600px) {
+  .search,.form-grid {grid-template-columns:1fr}
+  header h1 {font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏞️ 국립공원 분실물 찾기</h1>
+  <p>잃어버린 소중한 물건, 국립공원에서 다시 찾아드립니다.</p>
+</header>
+
+<nav>
+  <button onclick="showSection('list')">분실물·습득물 게시판</button>
+  <button onclick="showSection('lost')">분실물 신고</button>
+  <button onclick="showSection('found')">습득물 신고</button>
+</nav>
+
+<main>
+
+<section id="list" class="panel">
+  <h2>🔎 분실물 찾기</h2>
+  <p>국립공원과 물품 이름을 입력하여 검색하세요.</p>
+  <div class="search">
+    <input id="keyword" placeholder="물품명 또는 장소 검색"
+      oninput="renderItems()">
+    <select id="park" onchange="renderItems()">
+      <option value="">전체 국립공원</option>
+      <option>북한산국립공원</option>
+      <option>설악산국립공원</option>
+      <option>지리산국립공원</option>
+      <option>한라산국립공원</option>
+      <option>속리산국립공원</option>
+      <option>내장산국립공원</option>
+      <option>무등산국립공원</option>
+      <option>태안해안국립공원</option>
+      <option>기타 국립공원</option>
+    </select>
+    <button onclick="renderItems()">검색</button>
+  </div>
+  <br>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="secondary" onclick="filterType('')">전체</button>
+    <button onclick="filterType('분실')">분실물</button>
+    <button onclick="filterType('습득')">습득물</button>
+  </div>
+</section>
+
+<section id="formPanel" class="panel hidden">
+  <h2 id="formTitle">분실물 신고</h2>
+  <form id="reportForm">
+    <input type="hidden" id="type">
+
+    <div class="form-grid">
+      <label>국립공원 선택
+        <select id="formPark" required>
+          <option value="">선택하세요</option>
+          <option>북한산국립공원</option>
+          <option>설악산국립공원</option>
+          <option>지리산국립공원</option>
+          <option>한라산국립공원</option>
+          <option>속리산국립공원</option>
+          <option>내장산국립공원</option>
+          <option>무등산국립공원</option>
+          <option>태안해안국립공원</option>
+          <option>기타 국립공원</option>
+        </select>
+      </label>
+
+      <label>물품 종류
+        <select id="category" required>
+          <option>휴대전화</option>
+          <option>지갑</option>
+          <option>가방</option>
+          <option>의류</option>
+          <option>등산용품</option>
+          <option>카메라</option>
+          <option>귀중품</option>
+          <option>기타</option>
+        </select>
+      </label>
+
+      <label>물품 이름
+        <input id="itemName" placeholder="예: 검은색 지갑" required>
+      </label>
+
+      <label>발생 날짜
+        <input id="date" type="date" required>
+      </label>
+
+      <label>분실·습득 장소
+        <input id="place" placeholder="예: 대피소 인근" required>
+      </label>
+
+      <label>신고자 이름 또는 별명
+        <input id="person" placeholder="홍길동 또는 별명" required>
+      </label>
+    </div>
+
+    <label>물품 상세 설명
+      <textarea id="description"
+        placeholder="색상, 모양, 특징 등을 자세히 작성해주세요."></textarea>
+    </label>
+
+    <label>물품 사진 첨부
+      <input id="photo" type="file" accept="image/*">
+    </label>
+
+    <label>연락처 (공개 게시글에는 표시되지 않습니다)
+      <input id="contact" placeholder="연락 가능한 전화번호 또는 이메일">
+    </label>
+
+    <p style="font-size:12px;color:#888">
+      ※ 주민등록번호, 주소, 카드번호 등 민감한 정보는 입력하지 마세요.
+    </p>
+
+    <button type="submit">등록하기</button>
+    <button type="button" class="secondary"
+      onclick="showSection('list')">취소</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>📋 분실물·습득물 등록 현황</h2>
+  <p id="count">등록된 게시글 0건</p>
+  <div id="items" class="cards"></div>
+</section>
+
+</main>
+
+<footer>
+  국립공원 분실물 찾기 서비스<br>
+  소중한 자연과 소중한 물건을 함께 지켜주세요.
+</footer>
+
+<script>
+let posts = JSON.parse(localStorage.getItem('parkPosts') || '[]');
+let currentFilter = '';
+
+function save() {
+  localStorage.setItem('parkPosts', JSON.stringify(posts));
+}
+
+function showSection(type) {
+  document.getElementById('formPanel').classList.toggle(
+    'hidden', type === 'list'
+  );
+
+  if(type === 'lost' || type === 'found') {
+    document.getElementById('type').value =
+      type === 'lost' ? '분실' : '습득';
+
+    document.getElementById('formTitle').innerText =
+      type === 'lost' ? '📌 분실물 신고 등록' : '📦 습득물 신고 등록';
+
+    document.getElementById('reportForm').reset();
+    document.getElementById('type').value =
+      type === 'lost' ? '분실' : '습득';
+  }
+
+  document.getElementById('list').scrollIntoView({
+    behavior:'smooth'
+  });
+}
+
+function filterType(type) {
+  currentFilter = type;
+  renderItems();
+}
+
+document.getElementById('reportForm')
+.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const file = document.getElementById('photo').files[0];
+
+  function addPost(photoData) {
+    const post = {
+      id:Date.now(),
+      type:document.getElementById('type').value,
+      park:document.getElementById('formPark').value,
+      category:document.getElementById('category').value,
+      name:document.getElementById('itemName').value,
+      date:document.getElementById('date').value,
+      place:document.getElementById('place').value,
+      person:document.getElementById('person').value,
+      description:document.getElementById('description').value,
+      contact:document.getElementById('contact').value,
+      photo:photoData || ''
+    };
+
+    posts.unshift(post);
+    save();
+    renderItems();
+    alert('게시글이 등록되었습니다.');
+    document.getElementById('reportForm').reset();
+    showSection('list');
+  }
+
+  if(file) {
+    if(file.size > 1.5 * 1024 * 1024) {
+      alert('사진은 1.5MB 이하로 등록해주세요.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => addPost(reader.result);
+    reader.readAsDataURL(file);
+  } else {
+    addPost('');
+  }
+});
+
+function renderItems() {
+  const keyword = document.getElementById('keyword')
+    .value.toLowerCase();
+  const park = document.getElementById('park').value;
+
+  const filtered = posts.filter(p => {
+    const text = (p.name + p.place + p.description +
+      p.category + p.park).toLowerCase();
+
+    return text.includes(keyword) &&
+      (!park || p.park === park) &&
+      (!currentFilter || p.type === currentFilter);
+  });
+
+  document.getElementById('count').innerText =
+    '등록된 게시글 ' + filtered.length + '건';
+
+  const container = document.getElementById('items');
+  container.innerHTML = '';
+
+  if(filtered.length === 0) {
+    container.innerHTML =
+      '<div class="empty">등록된 게시글이 없습니다.</div>';
+    return;
+  }
+
+  filtered.forEach(p => {
+    const card = document.createElement('article');
+    card.className = 'item';
+
+    const img = document.createElement('img');
+    img.alt = '등록 물품 사진';
+    img.src = p.photo || 'data:image/svg+xml,' +
+      encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="160"><rect width="100%" height="100%" fill="#edf1ee"/><text x="50%" y="50%" text-anchor="middle" fill="#829087" font-size="16">사진 없음</text></svg>');
+
+    const content = document.createElement('div');
+    content.className = 'item-content';
+
+    const tag = document.createElement('span');
+    tag.className = 'tag ' + (p.type === '분실' ? 'lost' : '');
+    tag.textContent = p.type + ' 신고';
+
+    const title = document.createElement('h3');
+    title.textContent = p.name;
+
+    const info = document.createElement('p');
+    info.textContent = p.park + ' · ' + p.category +
+      '\n날짜: ' + p.date +
+      '\n장소: ' + p.place +
+      '\n신고자: ' + p.person;
+
+    const desc = document.createElement('p');
+    desc.textContent = p.description || '상세 설명 없음';
+
+    const contactBtn = document.createElement('button');
+    contactBtn.textContent = '연락 및 확인 방법';
+    contactBtn.onclick = () => {
+      alert('신고자: ' + p.person +
+        '\n연락처: ' + (p.contact || '등록된 연락처 없음') +
+        '\n\n실제 서비스에서는 본인 확인 후 안전한 방식으로 연락처를 전달해야 합니다.');
+    };
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '삭제';
+    deleteBtn.className = 'secondary';
+    deleteBtn.style.marginLeft = '6px';
+    deleteBtn.onclick = () => {
+      if(confirm('이 게시글을 삭제하시겠습니까?')) {
+        posts = posts.filter(x => x.id !== p.id);
+        save();
+        renderItems();
+      }
+    };
+
+    content.append(tag,title,info,desc,contactBtn,deleteBtn);
+    card.append(img,content);
+    container.appendChild(card);
+  });
+}
+
+renderItems();
+</script>
+
+</body>
+</html>
